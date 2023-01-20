@@ -1,0 +1,124 @@
+---
+title: "Arsen Yerlan Intro Basics"
+output: html_document
+date: "2023-01-20"
+---
+```{r}
+source("setup.R")
+```
+
+```{r}
+data(penguins)
+penguins
+```
+```{r}
+#Making lists
+myList<-list("apple", 1993, FALSE, penguins)
+str(myList)
+names(myList)<-c("fruit", "year", "logic", "data")
+names(myList)
+```
+
+```{r}
+#Indexing
+myList[[4]]
+myList[["data"]]
+
+myVector<- c("apple", "banana", "pear")
+myVector[1]
+
+penguins[1, 1:5]
+penguins[1:5, 2:3]
+```
+
+
+```{r}
+#Exercise 1 Fixing the codes
+
+myList["Fruit"]
+#If we want to index a list, we use double brackets
+myList[["Fruit"]]
+#---#
+penguins$flipper_lenght_mm
+#Spelling error.Needs to be length.This will give us a vector. If we want a data frame, we can use the second line of code
+penguins$flipper_length_mm
+penguins[1:344, c("island", "flipper_length_mm")]
+```
+
+```{r}
+#Exercise 2
+unique(penguins$species)
+unique(penguins$island)
+#There were three species of penguins and three islands from which data was collected. 
+```
+```{r}
+#Exercise 3
+penguins[penguins$island=='Dream', c("species", "island", "flipper_length_mm")]
+```
+```{r}
+#Exercise 4. We will use na.rm=TRUE
+AdelieFLP<- penguins[penguins$species=='Adelie', c("species", "flipper_length_mm")]
+mean(AdelieFLP$flipper_length_mm, na.rm=TRUE)
+```
+```{r}
+#Work with tidyverse
+filter(penguins, species=="Adelie")
+filter(penguins, species !="Adelie")
+filter(penguins, island %in% c("Dream", "Torgersen") & !is.na(bill_length_mm))
+
+
+
+```
+```{r}
+#Tidyverse exercises
+#1
+penguins %>%
+  select(year,everything())
+```
+
+```{r}
+#2 create column 'size_group'Create a new column called ‘size_group’ where individuals with body mass greater than the overall average are called ‘large’ and those smaller are called ‘small’.
+
+mutate(penguins, size_group = if_else(body_mass_g> mean(body_mass_g, na.rm=TRUE), "large","small"))
+```
+```{r}
+# Exercise 3- Find out which year for each species were individuals on average the largest according to body mass.
+penguins %>%
+  group_by(species, year) %>%
+  summarize(body_mass_avg = mean(body_mass_g, na.rm=TRUE))%>%
+  group_by(species, year, body_mass_avg)%>%
+  print(max(dataframe$body_mass_avg))
+
+  
+```
+
+```{r}
+# 4 You want to filter data for years that are not in a vector of given years, but this code doesn’t work. Tweak it so that it does. (Yes, you could just filter year to equal 2007 in this case but there is a trouble-shooting lessons here).
+penguins %>% 
+  filter(!year %in% c(2008, 2009))
+```
+```{r}
+ggplot(penguins) + 
+  geom_histogram(mapping = aes(x = flipper_length_mm))
+# Histogram example: flipper length by species
+ggplot(penguins) +
+  geom_histogram(aes(x = flipper_length_mm, fill = species), alpha = 0.5, position = "identity") +
+  scale_fill_manual(values = c("darkorange","darkorchid","cyan4"))
+ggplot(penguins) +
+  geom_histogram(aes(x = flipper_length_mm, fill = species), alpha = 0.5, position = "identity") +
+  scale_fill_manual(values = c("darkorange","darkorchid","cyan4")) +
+  facet_wrap(~species)
+```
+
+```{r}
+ggplot(penguins) +
+  geom_point(mapping = aes(x = body_mass_g, y = flipper_length_mm, color = species))
+```
+
+```{r}
+#GGplot exercises 1 Make a barplot showing the average flipper length for each species
+average_chart<-ggplot(data=penguins, aes(x=species, y=mean(penguins$flipper_length_mm, na.rm=TRUE)))
+average_chart
+average_chart+geom_bar(stat="identity", fill=species)
+```
+
