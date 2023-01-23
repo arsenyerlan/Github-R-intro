@@ -79,8 +79,17 @@ tm_shape(counties_fl) +
   tm_polygons(col = 'ALAND', )
 tm_shape(counties_fl) +
   tm_polygons(col = 'AWATER')
-
+?tm_polygons
 ## Make a barplot comparing the elevation of your 3 points in the Poudre Canyon 
+
+
+roads %>%
+  filter(grepl('Poudre',FULLNAME, ignore.case = T))
+
+roads %>% 
+  filter(str_detect(FULLNAME, "Poudre"))
+
+### The code above contains use code for finding information in a vector that you do not know the exact name of. 
 pdrHwy <- roads %>% 
   filter(FULLNAME == 'Poudre Canyon Hwy')
 
