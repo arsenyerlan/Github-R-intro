@@ -1,0 +1,115 @@
+---
+title: "Spatial test"
+output: html_document
+date: "2023-01-20"
+---
+
+```{r}
+source("setup.R")
+#Import colorado counties with tigris
+
+counties<-counties(state="CO")
+#Import roads for Larimer county
+roads<-roads(state="CO", county="Larimer")
+
+# set tmap mode to interactive
+tmap_mode("view")
+
+
+qtm(counties)+
+  qtm(roads)
+
+tm_shape(counties)+
+  tm_polygons()
+#Look at the class of counties
+class(counties)
+```
+
+```{r}
+# point data
+poudre_points <- data.frame(name = c("Mishawaka", "Rustic", "Blue Lake Trailhead"),
+                            long = c(-105.35634, -105.58159, -105.85563),
+                            lat = c(40.68752, 40.69687, 40.57960))
+#convert to spatial
+poudre_points_sf<-st_as_sf(poudre_points, coords=c("long", "lat"), crs= 4326)
+class(poudre_points_sf)
+poudre_points_sf
+```
+
+
+
+```{r}
+#raster data
+elevation<-get_elev_raster(counties, z= 7)
+elevation
+qtm(elevation)
+tm_shape(elevation)+
+  tm_raster(style="cont", title="Elevation (m)")
+```
+
+
+```{r}
+#the terra package
+elevation<-rast(elevation)
+elevation
+names(elevation)<-"Elevation"
+elevation
+#check projections
+st_crs(counties)
+
+crs(counties)==crs(elevation)
+
+#project elevation layer
+elevation_prj<-terra::project(elevation, counties)
+#crop elevation to counties extent
+elevation_crop<-crop(elevation, ext(counties))
+qtm(elevation_crop)
+```
+
+
+```{r}
+#Exercises 
+##1 Filter out the counties data set to only include Larimer, Denver, and Pueblo counties.
+
+counties_fl<-counties %>% 
+  filter(NAME %in% c('Larimer', 'Denver', 'Pueblo'))
+qtm(counties_fl)
+##2 Make a map of the counties data colored by county area. Make a second map of counties colored by their total area of water.
+tm_shape(counties_fl) +
+  tm_polygons(col = 'ALAND', )
+tm_shape(counties_fl) +
+  tm_polygons(col = 'AWATER')
+
+## Make a barplot comparing the elevation of your 3 points in the Poudre Canyon 
+pdrHwy <- roads %>% 
+  filter(FULLNAME == 'Poudre Canyon Hwy')
+
+elevation <- get_elev_raster(counties, z = 7)
+elevation <- rast(elevation)
+names(elevation) <- 'Elevation'
+elevationCrop <- crop(elevation, ext(pdrHwy))
+writeRaster(elevationCrop, 'data/poudreElevation.tif')
+pdrPointElevation <- extract(x= elevationCrop, 
+                             y= pdrPntsProject,
+                             xy= TRUE
+                             ) 
+pdrPointElevation %>% 
+  ggplot() +
+    geom_col(mapping = aes(x=ID, y=Elevation))
+
+?extract()
+```
+
+
+?extract()
+
+#read and write spatial data
+
+#safe sf/vector data
+write_sf(counties, "data/counties.shp")
+
+#save raster data
+writeRaster(elevation_crop,"data/elevation.tif")
+
+#save R data
+save(counties, roads, file= "data/spatial_objects.RData")

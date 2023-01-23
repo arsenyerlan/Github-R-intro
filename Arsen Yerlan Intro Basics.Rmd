@@ -65,9 +65,6 @@ mean(AdelieFLP$flipper_length_mm, na.rm=TRUE)
 filter(penguins, species=="Adelie")
 filter(penguins, species !="Adelie")
 filter(penguins, island %in% c("Dream", "Torgersen") & !is.na(bill_length_mm))
-
-
-
 ```
 ```{r}
 #Tidyverse exercises
